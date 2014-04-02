@@ -1,0 +1,35 @@
+.smalllabel{
+	font-size:9px;
+	color:#444;
+}
+
+
+.wordCell{
+		font-size:24px;
+}
+
+.title{
+		font-family: 'Audiowide', cursive;color:#333
+}
+.gray{
+	background: #ddd;
+}
+
+.info{
+	background: #c0f0f6;
+}
+
+.bt{
+
+	background: orange;
+	padding: 2px;
+	margin: 2px;
+	border: 1px solid #000000;  
+}
+
+.matched{
+	color:#2a2;
+}
+.blackbg{
+	background:black;
+}
