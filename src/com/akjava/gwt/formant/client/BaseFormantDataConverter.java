@@ -39,6 +39,10 @@ public class BaseFormantDataConverter extends Converter<List<BaseFormantData>,St
 		}
 		private int f1;
 		private int f2;
+		
+		public String toString(){
+			return name+","+f1+","+f2;
+		}
 	}
 
 	@Override

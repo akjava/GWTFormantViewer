@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.akjava.gwt.formant.client.BaseFormantDataConverter.BaseFormantData;
 import com.akjava.gwt.formant.client.CanvasAndFileChooser.ArrayBufferUploadedListener;
 import com.akjava.gwt.html5.client.download.HTML5Download;
 import com.akjava.gwt.html5.client.file.Blob;
@@ -81,6 +82,7 @@ import com.google.gwt.xhr.client.XMLHttpRequest.ResponseType;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class GWTFormant implements EntryPoint {
+	private static final String KEY_SETTING_FORMANT_HEADER="formant_setting_formant_header_";
 	public static TextConstants textConstants=GWT.create(TextConstants.class);
 	private Recorder recorder;
 	private AudioContext audioContext;
@@ -495,6 +497,13 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 	
 	private class FormantData{
 		private String name;
+		private BaseFormantData baseData;
+		public BaseFormantData getBaseData() {
+			return baseData;
+		}
+		public void setBaseData(BaseFormantData baseData) {
+			this.baseData = baseData;
+		}
 		public FormantData(String name, int f1, int f2) {
 			super();
 			this.name = name;
@@ -521,6 +530,10 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			this.f2 = f2;
 		}
 		private int f2;
+		
+		public String toString(){
+			return name+","+f1+","+f2;
+		}
 	}
 	
 	protected void stopAnalyze() {
@@ -557,6 +570,32 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		drawCanvas();
 	}
 
+	
+	List<FormantData> formants;
+	public void updateFormantList(){
+		formants=Lists.newArrayList();
+		List<BaseFormantData> datas=settingPanel.getBaseFormantDatas();
+		for(BaseFormantData base:datas){
+			FormantData data=createFormantData(base);
+			formants.add(data);
+		}
+		
+		formantList.setValue(null);//TODO check not empty
+		formantList.setAcceptableValues(formants);
+	}
+	
+	private FormantData createFormantData(BaseFormantData base){
+		String text=storageControler.getValue(KEY_SETTING_FORMANT_HEADER+base.getName(),"");
+		FormantData data;
+		if(!text.isEmpty()){
+			data=new FormantConverter().reverse().convert(text);
+		}else{
+			data=new FormantData(base.getName(), base.getF1(), base.getF2());
+		}
+		data.setBaseData(base);
+		return data;
+	}
+	
 	private void createBottoms(Panel root){
 		HorizontalPanel bottoms=new HorizontalPanel();
 		bottoms.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
@@ -575,7 +614,7 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		
 		
 	
-		
+		/*
 		formantDefaultDatas = new ArrayList<GWTFormant.FormantData>();
 		formantDefaultDatas.add(new FormantData("i", 280, 2230));
 		formantDefaultDatas.add(new FormantData("e", 405, 2080));
@@ -586,8 +625,9 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		formantDefaultDatas.add(new FormantData("o", 430, 980));
 		formantDefaultDatas.add(new FormantData("u", 330, 1260));
 		formantDefaultDatas.add(new FormantData("ʌ", 680, 1310));
-		
+		*/
 	
+		/*
 		String text=storageControler.getValue(KEY_FORMANT_9MAP, "");
 		if(!text.isEmpty()){
 		formantDatas=FluentIterable.from(CSVUtils.splitLinesWithGuava(text)).transform(new FormantConverter().reverse()).toList();
@@ -595,7 +635,7 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		}else{
 		formantDatas = Lists.newArrayList(formantDefaultDatas);
 		}
-		
+		*/
 		formantList = new ValueListBox<GWTFormant.FormantData>(new Renderer<FormantData>() {
 			@Override
 			public String render(FormantData object) {
@@ -611,7 +651,11 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				
 			}
 		});
-		formantList.setAcceptableValues(formantDatas);
+		//formantList.setAcceptableValues(formantDatas);
+		
+		updateFormantList();
+		
+		
 		bottoms.add(formantList);
 		formantList.addValueChangeHandler(new ValueChangeHandler<GWTFormant.FormantData>() {
 			
@@ -649,7 +693,7 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 					data.setF1(f1hz);
 					data.setF2(f2hz);
 				}
-				storeDatas();
+				storeData(data);
 				repaintBoth();
 			}
 		});
@@ -661,21 +705,19 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 				FormantData data=formantList.getValue();
 				
 				if(data!=null){
-				for(FormantData fdata:formantDefaultDatas){
-					if(fdata.getName().equals(data.getName())){
-						data.setF1(fdata.getF1());
-						data.setF2(fdata.getF2());
-						formantControler.setF1Y(hzToIndex(data.getF1()));
-						formantControler.setF2Y(hzToIndex(data.getF2()));
-						break;
-					}
-				}
-				storeDatas();
+				
+					data.setF1(data.getBaseData().getF1());
+					data.setF2(data.getBaseData().getF2());
+					
+					formantControler.setF1Y(hzToIndex(data.getF1()));
+					formantControler.setF2Y(hzToIndex(data.getF2()));
+					
+					resetData(data);
 				
 				}else{
-					//reset default
-					formantControler.setF1Y(hzToIndex(500)*settingPanel.getZoom());
-					formantControler.setF2Y(hzToIndex(1500)*settingPanel.getZoom());
+					//reset default,maybe never called
+					formantControler.setF1Y(hzToIndex(500));
+					formantControler.setF2Y(hzToIndex(1500));
 				}
 				repaintBoth();
 				
@@ -731,18 +773,20 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		int marginRight=20;
 		imageCanvasMarginTop = 20;
 		int marginBottom=20;
-		String bgColor="#CCFFFF";
+		
 		Canvas canvas=CanvasUtils.createCanvas(f1Canvas+imageCanvasMarginLeft+marginRight, f2Canvas+imageCanvasMarginTop+marginBottom);
 		
 		//draw background
 		Context2d context=canvas.getContext2d();
-		context.setFillStyle(bgColor);
+		context.setFillStyle(settingPanel.getBackgroundColor());
+		context.fillRect(0,0,canvas.getCoordinateSpaceWidth(),canvas.getCoordinateSpaceHeight());
+		context.setFillStyle(settingPanel.getInsideColor());
 		context.fillRect(imageCanvasMarginLeft, imageCanvasMarginTop, f1Canvas, f2Canvas);
 		
 		
 		
 		//draw grid
-		context.setStrokeStyle("#fff");
+		context.setStrokeStyle(settingPanel.getMemoryLineColor());
 		canvas.getContext2d().setFillStyle("#000");
 		canvas.getContext2d().setFont("12px Courier");
 		for(int i=-2;i<=2;i++){
@@ -750,12 +794,12 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		int yplus=f2Canvas/4;
 		CanvasUtils.drawLine(canvas, f1Canvas/2+xplus*i+imageCanvasMarginLeft, 0+imageCanvasMarginTop, f1Canvas/2+xplus*i+imageCanvasMarginLeft, f2Canvas+imageCanvasMarginTop);
 		CanvasUtils.drawLine(canvas, imageCanvasMarginLeft, f2Canvas/2+yplus*i+imageCanvasMarginTop, f1Canvas+imageCanvasMarginLeft, f2Canvas/2+yplus*i+imageCanvasMarginTop);
-		int vf2=(endF2-startF2)/2;
+		int vf2=(getEndF2()-getStartF2())/2;
 		int vf2plus=-vf2/2;
-		vf2+=startF2;
-		int vf1=(endF1-startF1)/2;
+		vf2+=getStartF2();
+		int vf1=(getEndF1()-getStartF1())/2;
 		int vf1plus=vf1/2;
-		vf1+=startF1;
+		vf1+=getStartF1();
 		int offleft=i==-2?0:-10;
 		int offright=i==2?4:0;
 		canvas.getContext2d().fillText(""+(vf1+vf1plus*i), f1Canvas/2+xplus*i+imageCanvasMarginLeft+offleft, f2Canvas+imageCanvasMarginTop+14);
@@ -773,19 +817,23 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		context.strokeRect(imageCanvasMarginLeft, imageCanvasMarginTop, f1Canvas, f2Canvas);
 		
 		int rsize=4;
-		canvas.getContext2d().setFont("24px Courier");
+		canvas.getContext2d().setFont(settingPanel.getValueFont());
 		
-		for(FormantData data:formantDatas){
+		
+		for(FormantData data:formants){
 			
 			int x=canvasAtF1(data.getF1());
 			int y=canvasAtF2(data.getF2());
-			
+			LogUtils.log(data+",x="+x+",y="+y);
 			if(settingPanel.isShowImageBaseFormant()){
-				FormantData defaultData=getDefaultDataByName(data.getName());
+				BaseFormantData defaultData=data.getBaseData();
 				
 				int xd=canvasAtF1(defaultData.getF1());
 				int yd=canvasAtF2(defaultData.getF2());
-				canvas.getContext2d().setFillStyle("#0000ff");
+				
+				LogUtils.log(defaultData+",x="+xd+",y="+yd);
+				
+				canvas.getContext2d().setFillStyle(settingPanel.getBaseRectColor());
 				canvas.getContext2d().fillRect(xd-rsize/2, yd-rsize/2, rsize, rsize);
 				
 				canvas.getContext2d().setStrokeStyle("#888");
@@ -802,10 +850,10 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			
 			
 			
-			canvas.getContext2d().setFillStyle("#ff0000");
+			canvas.getContext2d().setFillStyle(settingPanel.getValueRectColor());
 			
 			canvas.getContext2d().fillRect(x-rsize/2, y-rsize/2, rsize, rsize);
-			canvas.getContext2d().setFillStyle("#000");
+			canvas.getContext2d().setFillStyle(settingPanel.getTextColor());
 			canvas.getContext2d().fillText(data.getName(), x+4, y);
 			
 			
@@ -816,26 +864,33 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		imagePanel.add(image);
 	}
 	
-	private FormantData getDefaultDataByName(String name){
-		for(FormantData data:formantDefaultDatas){
-			if(data.getName().equals(name)){
-				return data;
-			}
-		}
-		return null;
-	}
-	int startF1=100;
-	int endF1=1300;
+
+	//int startF1=100;
+	//int endF1=1300;
 	private int canvasAtF1(int f1){
 		//0-1000
-		return ((f1-startF1)*f1Canvas/(endF1-startF1))+imageCanvasMarginLeft;
+		return ((f1-getStartF1())*f1Canvas/(getEndF1()-getStartF1()))+imageCanvasMarginLeft;
 		//return f1Canvas-(f1*f1Canvas/1000);
 	}
-	int startF2=400;
-	int endF2=3200;
+	//int startF2=400;
+	//int endF2=3200;
+	
+	public int getStartF1(){
+		return settingPanel.getF1Min();
+	}
+	public int getEndF1(){
+		return settingPanel.getF1Max();
+	}
+	
+	public int getStartF2(){
+		return settingPanel.getF2Min();
+	}
+	public int getEndF2(){
+		return settingPanel.getF2Max();
+	}
 	private int canvasAtF2(int f2){
 		//500-2500
-		return f2Canvas-((f2-startF2)*f2Canvas/(endF2-startF2))+imageCanvasMarginTop;
+		return f2Canvas-((f2-getStartF2())*f2Canvas/(getEndF2()-getStartF2()))+imageCanvasMarginTop;
 	}
 	
 	public static final String KEY_FORMANT_9MAP="key_formant_9map";
@@ -867,17 +922,21 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 	}
 	
 	private String getStoreFormantText(){
-		List<String> lines=FluentIterable.from(formantDatas).transform(new FormantConverter()).toList();
+		
+		List<String> lines=FluentIterable.from(formants).transform(new FormantConverter()).toList();
 		return Joiner.on("\r\n").join(lines);
 	}
 	
 	
-	protected void storeDatas() {
+	protected void storeData(FormantData data) {
 		try {
-			storageControler.setValue(KEY_FORMANT_9MAP,getStoreFormantText() );
+			storageControler.setValue(KEY_SETTING_FORMANT_HEADER+data.getName(),new FormantConverter().convert(data) );
 		} catch (StorageException e) {
 			Window.alert(e.getMessage());
 		}
+	}
+	protected void resetData(FormantData data) {
+		storageControler.removeValue(KEY_SETTING_FORMANT_HEADER+data.getName());
 	}
 
 	private void analyzeWave(ArrayBuffer arrayBuffer){
@@ -1154,8 +1213,8 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			return analyser;
 		}
 	});
-	private List<FormantData> formantDefaultDatas;
-	private List<FormantData> formantDatas;
+	//private List<FormantData> formantDefaultDatas;
+	//private List<FormantData> formantDatas;
 	private VerticalPanel imagePanel;
 	private ValueListBox<FormantData> formantList;
 	private Button resetBt;

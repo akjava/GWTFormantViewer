@@ -6,15 +6,21 @@ import java.util.List;
 import com.akjava.gwt.formant.client.BaseFormantDataConverter.BaseFormantData;
 import com.akjava.gwt.formant.client.BaseFormantDataEditor.Driver;
 import com.akjava.gwt.formant.client.resources.Bundles;
+import com.akjava.gwt.html5.client.file.File;
+import com.akjava.gwt.html5.client.file.FileUploadForm;
+import com.akjava.gwt.html5.client.file.FileUtils;
+import com.akjava.gwt.html5.client.file.FileUtils.DataURLListener;
+import com.akjava.gwt.html5.client.input.ColorBox;
 import com.akjava.gwt.lib.client.StorageException;
 import com.akjava.gwt.lib.client.widget.cell.ButtonColumn;
 import com.akjava.gwt.lib.client.widget.cell.EasyCellTableObjects;
 import com.akjava.gwt.lib.client.widget.cell.SimpleCellTable;
 import com.akjava.lib.common.utils.ValuesUtils;
 import com.google.common.collect.Lists;
-import com.google.gwt.cell.client.ButtonCell;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -22,14 +28,17 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.text.shared.Renderer;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.IntegerBox;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
-import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueListBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
@@ -39,6 +48,21 @@ private static final String KEY_SETTING_BASE_FORMANT="formant_setting_base_forma
 private static final String KEY_SETTING_ZOOM="formant_setting_zoom";
 private static final String KEY_SETTING_SHOW_BASE="formant_setting_show_base";	
 private static final String KEY_SETTING_QUALITY="formant_setting_quality";
+
+private static final String KEY_SETTING_FONT_VALUE="formant_setting_font_value";
+
+private static final String KEY_SETTING_COLOR_TEXT="formant_setting_color_text";
+private static final String KEY_SETTING_COLOR_INSIDE="formant_setting_color_inside";
+private static final String KEY_SETTING_COLOR_BG="formant_setting_color_bg";
+private static final String KEY_SETTING_COLOR_BASE="formant_setting_color_base";
+private static final String KEY_SETTING_COLOR_VALUE="formant_setting_color_value";
+private static final String KEY_SETTING_COLOR_MEMORY="formant_setting_color_memory";
+
+private static final String KEY_SETTING_F1_GRID_MIN="formant_setting_f1_grid_min";
+private static final String KEY_SETTING_F1_GRID_MAX="formant_setting_f1_grid_max";
+private static final String KEY_SETTING_F2_GRID_MIN="formant_setting_f2_grid_min";
+private static final String KEY_SETTING_F2_GRID_MAX="formant_setting_f2_grid_max";
+
 private ValueListBox<Integer> zoomValueBox;
 private ValueListBox<Integer> qualityValueBox;
 private CheckBox showBase;
@@ -65,10 +89,13 @@ private void createBody() {
 	v.add(tab);
 	tab.setSize("100%", "100%");
 	
-	//zoom
+	tab.add(createImageFormant(),"generate image");//tmp first
+	
+	tab.add(createBaseFormant(),"base formant");
+	//tab.add(createImageFormant(),"generate image");
 	tab.add(createZoomAndQuality(),"zoom");
 	tab.selectTab(0);
-	tab.add(createBaseFormant(),"base formant");
+	
 	
 }
 
@@ -167,6 +194,211 @@ private Panel createZoomAndQuality(){
 	return zoomPanel;
 }
 
+private ColorBox textColorBox,insideColorBox,bgColorBox,baseRectBox,valueRectBox,memoryLineBox;
+private IntegerBox f1minBox,f1maxBox,f2minBox,f2maxBox;
+private TextBox valueFontBox;
+
+private void storeValue(String key,String value){
+	try {
+		getEntryPoint().storageControler.setValue(key,value);
+	} catch (StorageException e) {
+		Window.alert(e.getMessage());//usually quota
+	}
+}
+
+private void storeValue(String key,int value){
+	try {
+		getEntryPoint().storageControler.setValue(key,value);
+	} catch (StorageException e) {
+		Window.alert(e.getMessage());//usually quota
+	}
+}
+private Panel createImageFormant(){
+	VerticalPanel panel=new VerticalPanel();
+	
+	valueFontBox=createTextBox(panel, "font", getEntryPoint().storageControler.getValue(KEY_SETTING_FONT_VALUE, "16px Courier"));
+	valueFontBox.addValueChangeHandler(new StringStoreHandler(KEY_SETTING_FONT_VALUE));
+			
+			
+	
+	Button reset0=new Button("reset",new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			valueFontBox.setText("16px Courier");
+			storeValue(KEY_SETTING_FONT_VALUE, valueFontBox.getText());
+		}
+	});
+	panel.add(reset0);
+	
+	
+	panel.add(new Label("Color"));
+	textColorBox=createColorBox(panel, "text", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_TEXT, "#000000"));
+	insideColorBox=createColorBox(panel, "inside", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_INSIDE, "#CCFFFF"));
+
+	bgColorBox=createColorBox(panel, "background", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BG, "#FFFFFF"));
+
+	baseRectBox=createColorBox(panel, "baseRect", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BASE, "#0000FF"));
+	valueRectBox=createColorBox(panel, "valueRect", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_VALUE, "#FF0000"));
+	memoryLineBox=createColorBox(panel, "memoryLine", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_MEMORY, "#FFFFFF"));
+	
+	Button reset=new Button("reset",new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			textColorBox.setValue("#000000");
+			insideColorBox.setValue("#CCFFFF");
+			bgColorBox.setValue("#FFFFFF");
+			baseRectBox.setValue("#0000FF");
+			valueRectBox.setValue("#FF0000");
+			memoryLineBox.setValue("#FFFFFF");
+			
+			storeValue(KEY_SETTING_COLOR_TEXT, textColorBox.getValue());
+			storeValue(KEY_SETTING_COLOR_INSIDE, insideColorBox.getValue());
+			storeValue(KEY_SETTING_COLOR_BG, bgColorBox.getValue());
+			storeValue(KEY_SETTING_COLOR_BASE, baseRectBox.getValue());
+			storeValue(KEY_SETTING_COLOR_VALUE, valueRectBox.getValue());
+			storeValue(KEY_SETTING_COLOR_MEMORY, memoryLineBox.getValue());
+		}
+	});
+	panel.add(reset);
+	
+	
+	//TODO store when closed
+	panel.add(new Label("Grid"));
+	
+	f1minBox=createIntegerBox(panel,"f1min", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MIN, 100));
+	f1maxBox=createIntegerBox(panel,"f1max", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MAX, 1300));
+	f2minBox=createIntegerBox(panel,"f2min", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MIN, 400));
+	f2maxBox=createIntegerBox(panel,"f2max", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MAX, 3200));
+	
+	f1minBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F1_GRID_MIN));
+	f1maxBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F1_GRID_MAX));
+	f2minBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F2_GRID_MIN));
+	f2maxBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F2_GRID_MAX));
+	
+	Button reset2=new Button("reset",new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			f1minBox.setValue(100);
+			f1maxBox.setValue(1300);
+			f2minBox.setValue(400);
+			f2maxBox.setValue(3200);
+			
+			storeValue(KEY_SETTING_F1_GRID_MIN, f1minBox.getValue());
+			storeValue(KEY_SETTING_F1_GRID_MAX, f1maxBox.getValue());
+			storeValue(KEY_SETTING_F2_GRID_MIN, f2minBox.getValue());
+			storeValue(KEY_SETTING_F2_GRID_MAX, f2maxBox.getValue());
+		}
+	});
+	panel.add(reset2);
+	
+	return panel;
+}
+
+private class StoreHandler implements ValueChangeHandler<Integer>{
+private String key;
+private StoreHandler(String key){
+	this.key=key;
+}
+	@Override
+	public void onValueChange(ValueChangeEvent<Integer> event) {
+		storeValue(key, event.getValue());
+	}
+}
+
+private class StringStoreHandler implements ValueChangeHandler<String>{
+private String key;
+private StringStoreHandler(String key){
+	this.key=key;
+}
+	@Override
+	public void onValueChange(ValueChangeEvent<String> event) {
+		storeValue(key, event.getValue());
+	}
+}
+
+public int getF1Min(){
+	return f1minBox.getValue();
+}
+
+public int getF1Max(){
+	return f1maxBox.getValue();
+}
+
+public int getF2Min(){
+	return f2minBox.getValue();
+}
+
+public int getF2Max(){
+	return f2maxBox.getValue();
+}
+
+public String getValueFont(){
+	return valueFontBox.getValue();
+}
+public String getTextColor(){
+	return textColorBox.getValue();
+}
+
+public String getBackgroundColor(){
+	return bgColorBox.getValue();
+}
+public String getInsideColor(){
+	return insideColorBox.getValue();
+}
+public String getBaseRectColor(){
+	return baseRectBox.getValue();
+}
+public String getValueRectColor(){
+	return valueRectBox.getValue();
+}
+
+public String getMemoryLineColor(){
+	return memoryLineBox.getValue();
+}
+
+//TODO uibinder
+public ColorBox createColorBox(Panel parent,String name,String value){
+	HorizontalPanel h=new HorizontalPanel();
+	parent.add(h);
+	
+	Label label=new Label(name);
+	label.setWidth("100px");
+	h.add(label);
+	
+	ColorBox box=new ColorBox();
+	box.setValue(value);
+	h.add(box);
+	return box;
+}
+
+public TextBox createTextBox(Panel parent,String name,String value){
+	HorizontalPanel h=new HorizontalPanel();
+	parent.add(h);
+	
+	Label label=new Label(name);
+	label.setWidth("100px");
+	h.add(label);
+	
+	TextBox box=new TextBox();
+	box.setValue(value);
+	h.add(box);
+	return box;
+}
+
+public IntegerBox createIntegerBox(Panel parent,String name,int value){
+	HorizontalPanel h=new HorizontalPanel();
+	parent.add(h);
+	
+	Label label=new Label(name);
+	label.setWidth("100px");
+	h.add(label);
+	
+	IntegerBox box=new IntegerBox();
+	box.setValue(value);
+	h.add(box);
+	return box;
+}
+	
 private Panel createBaseFormant(){
 	VerticalPanel panel=new VerticalPanel();
 	
@@ -219,6 +451,7 @@ private Panel createBaseFormant(){
 				@Override
 				public void update(int index, BaseFormantData object, String value) {
 					easyCells.upItem(object);
+					storeBaseFormant();
 				}
 				
 				@Override
@@ -234,6 +467,7 @@ private Panel createBaseFormant(){
 				@Override
 				public void update(int index, BaseFormantData object, String value) {
 					easyCells.downItem(object);
+					storeBaseFormant();
 				}
 				
 				@Override
@@ -301,6 +535,8 @@ private Panel createBaseFormant(){
 			BaseFormantData data=baseFormantDriver.flush();
 			easyCells.addItem(data);
 			createNewBaseFormantData();
+			
+			storeBaseFormant();
 		}
 	});
 	buttons.add(addButton);
@@ -313,8 +549,8 @@ private Panel createBaseFormant(){
 		public void onClick(ClickEvent event) {
 			baseFormantDriver.flush();
 			easyCells.update(true);
-			//updateBaseFormant convert and store?
-			//TODO store
+			
+			storeBaseFormant();
 		}
 	});
 	updateButton.setEnabled(false);
@@ -335,15 +571,67 @@ private Panel createBaseFormant(){
 	
 	//reset & import
 	
-	//HorizontalPanel bottomPanel=new HorizontalPanel();
+	HorizontalPanel bottomPanel=new HorizontalPanel();
+	panel.add(bottomPanel);
+	final ListBox presetBox=new ListBox();
+	presetBox.addItem("Canadian vowel");
+	presetBox.addItem("Average vowel formants");
+	presetBox.setSelectedIndex(0);
+	bottomPanel.add(presetBox);
+	
+	Button loadBt=new Button("load",new ClickHandler() {
+		@Override
+		public void onClick(ClickEvent event) {
+			String text;
+			if(presetBox.getSelectedIndex()==0){
+				text=Bundles.INSTANCE.canadian().getText();
+			}else{
+				text=Bundles.INSTANCE.average().getText();
+			}
+			easyCells.setDatas(new BaseFormantDataConverter().reverse().convert(text));
+			easyCells.update(true);
+			
+			storeBaseFormant();
+		}
+	});
+	bottomPanel.add(loadBt);
+	
+	//TODO importbt
+	bottomPanel.add(new Label("Upload"));
+	FileUploadForm importUpload=FileUtils.createSingleTextFileUploadForm(new DataURLListener() {
+		@Override
+		public void uploaded(File file, String asStringText) {
+			easyCells.setDatas(new BaseFormantDataConverter().reverse().convert(asStringText));
+			easyCells.update(true);
+		}
+	}, true);
+	bottomPanel.add(importUpload);
+	
+	
+	//TODO exportbt
 	
 	return panel;
 }
 
-private void synchBaseFormantData(){
-	//store data;
-
+protected void storeBaseFormant() {
+	String text=new BaseFormantDataConverter().convert(easyCells.getDatas());
+	
+	try {
+		getEntryPoint().storageControler.setValue(KEY_SETTING_BASE_FORMANT,text);
+	} catch (StorageException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	
 }
+
+
+
+public List<BaseFormantData> getBaseFormantDatas(){
+	return easyCells.getDatas();
+}
+
+
 
 private void createNewBaseFormantData(){
 	baseFormantDriver.edit(new BaseFormantData("", 500, 1500));
@@ -358,6 +646,16 @@ public int getZoom(){
 }
 
 protected void doClose() {
+	//bugs no way to catch value change handle.
+	storeValue(KEY_SETTING_COLOR_TEXT, textColorBox.getValue());
+	storeValue(KEY_SETTING_COLOR_INSIDE, insideColorBox.getValue());
+	storeValue(KEY_SETTING_COLOR_BG, bgColorBox.getValue());
+	storeValue(KEY_SETTING_COLOR_BASE, baseRectBox.getValue());
+	storeValue(KEY_SETTING_COLOR_VALUE, valueRectBox.getValue());
+	storeValue(KEY_SETTING_COLOR_MEMORY, memoryLineBox.getValue());
+	
+	getEntryPoint().updateFormantList();//sync formant data
+	getEntryPoint().repaintBoth();
 	getEntryPoint().mainDeck.showWidget(0);
 }
 
