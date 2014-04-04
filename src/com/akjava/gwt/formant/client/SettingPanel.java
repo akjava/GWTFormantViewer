@@ -19,8 +19,6 @@ import com.akjava.lib.common.utils.ValuesUtils;
 import com.google.common.collect.Lists;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -37,6 +35,7 @@ import com.google.gwt.user.client.ui.IntegerBox;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.Panel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TabLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.ValueListBox;
@@ -83,17 +82,18 @@ public SettingPanel(){
 
 private void createBody() {
 	VerticalPanel v=new VerticalPanel();
+	
 	v.setSize("100%", "100%");
 	this.add(v);
 	TabLayoutPanel tab=new TabLayoutPanel(25, Unit.PX);
 	v.add(tab);
 	tab.setSize("100%", "100%");
 	
-	tab.add(createImageFormant(),"generate image");//tmp first
+	tab.add(createImageFormant(),GWTFormant.textConstants.generate_image());//tmp first
 	
-	tab.add(createBaseFormant(),"base formant");
+	tab.add(createBaseFormant(),GWTFormant.textConstants.base_formant());
 	//tab.add(createImageFormant(),"generate image");
-	tab.add(createZoomAndQuality(),"zoom");
+	tab.add(createZoomAndQuality(),GWTFormant.textConstants.show_formant());
 	tab.selectTab(0);
 	
 	
@@ -103,7 +103,7 @@ private Panel createQuality(){
 
 	HorizontalPanel quality=new HorizontalPanel();
 
-	Label label=new Label("fftquality");
+	Label label=new Label("FFT"+GWTFormant.textConstants.quolity());
 	label.setWidth("100px");
 	quality.add(label);
 	List<Integer> qualityValues=Lists.newArrayList(1,2);
@@ -145,7 +145,7 @@ private Panel createZoom(){
 
 	HorizontalPanel zoom=new HorizontalPanel();
 
-	Label label=new Label("zoom");
+	Label label=new Label(GWTFormant.textConstants.zoom());
 	label.setWidth("100px");
 	zoom.add(label);
 	List<Integer> zoomValues=Lists.newArrayList(1,2,4);
@@ -214,14 +214,32 @@ private void storeValue(String key,int value){
 	}
 }
 private Panel createImageFormant(){
+	
 	VerticalPanel panel=new VerticalPanel();
 	
-	valueFontBox=createTextBox(panel, "font", getEntryPoint().storageControler.getValue(KEY_SETTING_FONT_VALUE, "16px Courier"));
+	showBase = new CheckBox(GWTFormant.textConstants.show_base_on_image());
+	panel.add(showBase);
+	boolean b=ValuesUtils.toBoolean(getEntryPoint().storageControler.getValue(KEY_SETTING_SHOW_BASE, "true"),true);
+	showBase.setValue(b);
+	
+	showBase.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
+		@Override
+		public void onValueChange(ValueChangeEvent<Boolean> event) {
+			try {
+				getEntryPoint().storageControler.setValue(KEY_SETTING_SHOW_BASE,""+event.getValue());
+			} catch (StorageException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	});
+	
+	valueFontBox=createTextBox(panel, GWTFormant.textConstants.font(), getEntryPoint().storageControler.getValue(KEY_SETTING_FONT_VALUE, "16px Courier"));
 	valueFontBox.addValueChangeHandler(new StringStoreHandler(KEY_SETTING_FONT_VALUE));
 			
 			
 	
-	Button reset0=new Button("reset",new ClickHandler() {
+	Button reset0=new Button(GWTFormant.textConstants.reset(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			valueFontBox.setText("16px Courier");
@@ -232,16 +250,16 @@ private Panel createImageFormant(){
 	
 	
 	panel.add(new Label("Color"));
-	textColorBox=createColorBox(panel, "text", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_TEXT, "#000000"));
-	insideColorBox=createColorBox(panel, "inside", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_INSIDE, "#CCFFFF"));
+	textColorBox=createColorBox(panel, GWTFormant.textConstants.text(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_TEXT, "#000000"));
+	insideColorBox=createColorBox(panel, GWTFormant.textConstants.inside(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_INSIDE, "#CCFFFF"));
 
-	bgColorBox=createColorBox(panel, "background", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BG, "#FFFFFF"));
+	bgColorBox=createColorBox(panel, GWTFormant.textConstants.background(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BG, "#FFFFFF"));
 
-	baseRectBox=createColorBox(panel, "baseRect", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BASE, "#0000FF"));
-	valueRectBox=createColorBox(panel, "valueRect", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_VALUE, "#FF0000"));
-	memoryLineBox=createColorBox(panel, "memoryLine", getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_MEMORY, "#FFFFFF"));
+	baseRectBox=createColorBox(panel, GWTFormant.textConstants.baseRect(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BASE, "#0000FF"));
+	valueRectBox=createColorBox(panel, GWTFormant.textConstants.valueRect(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_VALUE, "#FF0000"));
+	memoryLineBox=createColorBox(panel, GWTFormant.textConstants.memoryLine(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_MEMORY, "#FFFFFF"));
 	
-	Button reset=new Button("reset",new ClickHandler() {
+	Button reset=new Button(GWTFormant.textConstants.reset(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			textColorBox.setValue("#000000");
@@ -265,17 +283,17 @@ private Panel createImageFormant(){
 	//TODO store when closed
 	panel.add(new Label("Grid"));
 	
-	f1minBox=createIntegerBox(panel,"f1min", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MIN, 100));
-	f1maxBox=createIntegerBox(panel,"f1max", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MAX, 1300));
-	f2minBox=createIntegerBox(panel,"f2min", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MIN, 400));
-	f2maxBox=createIntegerBox(panel,"f2max", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MAX, 3200));
+	f1minBox=createIntegerBox(panel,GWTFormant.textConstants.min()+" F1", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MIN, 100));
+	f1maxBox=createIntegerBox(panel,GWTFormant.textConstants.max()+"F1", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MAX, 1300));
+	f2minBox=createIntegerBox(panel,GWTFormant.textConstants.min()+"F2", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MIN, 400));
+	f2maxBox=createIntegerBox(panel,GWTFormant.textConstants.max()+"F2", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MAX, 3200));
 	
 	f1minBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F1_GRID_MIN));
 	f1maxBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F1_GRID_MAX));
 	f2minBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F2_GRID_MIN));
 	f2maxBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F2_GRID_MAX));
 	
-	Button reset2=new Button("reset",new ClickHandler() {
+	Button reset2=new Button(GWTFormant.textConstants.reset(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			f1minBox.setValue(100);
@@ -291,7 +309,10 @@ private Panel createImageFormant(){
 	});
 	panel.add(reset2);
 	
-	return panel;
+	
+	ScrollPanel scroll=new ScrollPanel();
+	scroll.add(panel);
+	return scroll;
 }
 
 private class StoreHandler implements ValueChangeHandler<Integer>{
@@ -402,22 +423,7 @@ public IntegerBox createIntegerBox(Panel parent,String name,int value){
 private Panel createBaseFormant(){
 	VerticalPanel panel=new VerticalPanel();
 	
-	showBase = new CheckBox("show base on image");
-	panel.add(showBase);
-	boolean b=ValuesUtils.toBoolean(getEntryPoint().storageControler.getValue(KEY_SETTING_SHOW_BASE, "true"),true);
-	showBase.setValue(b);
 	
-	showBase.addValueChangeHandler(new ValueChangeHandler<Boolean>() {
-		@Override
-		public void onValueChange(ValueChangeEvent<Boolean> event) {
-			try {
-				getEntryPoint().storageControler.setValue(KEY_SETTING_SHOW_BASE,""+event.getValue());
-			} catch (StorageException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	});
 	SimpleCellTable<BaseFormantData> table=new SimpleCellTable<BaseFormantData>(9) {
 		@Override
 		public void addColumns(CellTable<BaseFormantData> table) {
@@ -427,7 +433,7 @@ private Panel createBaseFormant(){
 					return object.getName();
 				}
 			};
-			table.addColumn(nameColumn,"Name");
+			table.addColumn(nameColumn,GWTFormant.textConstants.name());
 			
 			TextColumn<BaseFormantData> f1Column=new TextColumn<BaseFormantDataConverter.BaseFormantData>() {
 				@Override
@@ -457,7 +463,7 @@ private Panel createBaseFormant(){
 				@Override
 				public String getValue(BaseFormantData object) {
 					// TODO Auto-generated method stub
-					return "Up";
+					return GWTFormant.textConstants.up();
 				}
 			};
 			table.addColumn(upButton);
@@ -472,7 +478,7 @@ private Panel createBaseFormant(){
 				
 				@Override
 				public String getValue(BaseFormantData object) {
-					return "Down";
+					return GWTFormant.textConstants.down();
 				}
 			};
 			table.addColumn(downButton);
@@ -529,7 +535,7 @@ private Panel createBaseFormant(){
 	buttons.add(newButton);
 	newButton.setEnabled(false);
 	
-	addButton = new Button("Add",new ClickHandler() {
+	addButton = new Button(GWTFormant.textConstants.add(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			BaseFormantData data=baseFormantDriver.flush();
@@ -544,7 +550,7 @@ private Panel createBaseFormant(){
 	
 
 	
-	updateButton = new Button("Update",new ClickHandler() {
+	updateButton = new Button(GWTFormant.textConstants.update(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			baseFormantDriver.flush();
@@ -556,7 +562,7 @@ private Panel createBaseFormant(){
 	updateButton.setEnabled(false);
 	buttons.add(updateButton);
 	
-	removeButton = new Button("remove",new ClickHandler() {
+	removeButton = new Button(GWTFormant.textConstants.remove(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			if(easyCells.getSelection()!=null){
@@ -574,12 +580,12 @@ private Panel createBaseFormant(){
 	HorizontalPanel bottomPanel=new HorizontalPanel();
 	panel.add(bottomPanel);
 	final ListBox presetBox=new ListBox();
-	presetBox.addItem("Canadian vowel");
-	presetBox.addItem("Average vowel formants");
+	presetBox.addItem(GWTFormant.textConstants.canadian_vowel());
+	presetBox.addItem(GWTFormant.textConstants.average_vowel());
 	presetBox.setSelectedIndex(0);
 	bottomPanel.add(presetBox);
 	
-	Button loadBt=new Button("load",new ClickHandler() {
+	Button loadBt=new Button(GWTFormant.textConstants.load(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			String text;
@@ -597,7 +603,7 @@ private Panel createBaseFormant(){
 	bottomPanel.add(loadBt);
 	
 	//TODO importbt
-	bottomPanel.add(new Label("Upload"));
+	bottomPanel.add(new Label(GWTFormant.textConstants.upload()));
 	FileUploadForm importUpload=FileUtils.createSingleTextFileUploadForm(new DataURLListener() {
 		@Override
 		public void uploaded(File file, String asStringText) {
@@ -607,10 +613,12 @@ private Panel createBaseFormant(){
 	}, true);
 	bottomPanel.add(importUpload);
 	
-	
 	//TODO exportbt
 	
-	return panel;
+	ScrollPanel scroll=new ScrollPanel();
+	scroll.add(panel);
+	return scroll;
+
 }
 
 protected void storeBaseFormant() {
@@ -661,7 +669,7 @@ protected void doClose() {
 
 private void createTopBar() {
 	HorizontalPanel buttons=new HorizontalPanel();
-	this.addNorth(buttons,25);
+	this.addNorth(buttons,30);
 	Button close=new Button(GWTFormant.textConstants.close(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {

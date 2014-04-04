@@ -125,4 +125,34 @@ public interface TextConstants extends Constants {
 	public String generate_csv();
 	public String download_recorded_audio();
 	
+	//public String generate_image();
+	public String base_formant();
+	//public String show_formant();
+	public String zoom();
+	public String font();
+	public String color();
+	public String text();
+	public String inside();
+	public String background();
+	public String baseRect();
+	public String valueRect();
+	public String memoryLine();
+	//public String reset();
+	public String grid();
+	public String min();
+	public String max();
+	public String load();
+	public String upload();
+	public String canadian_vowel();
+	public String average_vowel();
+	public String name();
+	public String up();
+	public String down();
+	public String newItem();
+	public String remove();
+	public String quolity();
+	public String show_base_on_image();
+	public String add();
+	public String update();
+
 }
