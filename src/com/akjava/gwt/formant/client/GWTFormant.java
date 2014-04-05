@@ -180,9 +180,7 @@ public class GWTFormant implements EntryPoint {
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				//source.disconnect(audioContext.getDestination());
-				localMediaStream.stop();
-				recorder=null;//no more useless maybe
+				stopMediaStream();
 				
 			}
 		});
@@ -251,6 +249,7 @@ public class GWTFormant implements EntryPoint {
 		main.setListener(new ArrayBufferUploadedListener(){
 			@Override
 			public void uploaded(ArrayBuffer buffer) {
+				stopMediaStream();
 				targetCanvasIndex=0;
 				analyzeWave(buffer);
 			}
@@ -267,6 +266,7 @@ public class GWTFormant implements EntryPoint {
 		sub.setListener(new ArrayBufferUploadedListener(){
 			@Override
 			public void uploaded(ArrayBuffer buffer) {
+				stopMediaStream();//make noise
 				targetCanvasIndex=1;
 				analyzeWave(buffer);
 				//targetCanvasIndex=0;//for another action
@@ -346,6 +346,13 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		
 		mainDeck.add(settingPanel);
 		
+	}
+	protected void stopMediaStream() {
+		//source.disconnect(audioContext.getDestination());
+		if(localMediaStream!=null){
+		localMediaStream.stop();
+		}
+		recorder=null;//no more useless maybe
 	}
 	private SettingPanel settingPanel;
 	
@@ -704,24 +711,7 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 			
 			@Override
 			public void onClick(ClickEvent event) {
-				FormantData data=formantList.getValue();
-				
-				if(data!=null){
-				
-					data.setF1(data.getBaseData().getF1());
-					data.setF2(data.getBaseData().getF2());
-					
-					formantControler.setF1Y(hzToIndex(data.getF1()));
-					formantControler.setF2Y(hzToIndex(data.getF2()));
-					
-					resetData(data);
-				
-				}else{
-					//reset default,maybe never called
-					formantControler.setF1Y(hzToIndex(500));
-					formantControler.setF2Y(hzToIndex(1500));
-				}
-				repaintBoth();
+				updateFormantLines();
 				
 			}
 		});
@@ -757,6 +747,27 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		
 	
 		
+	}
+	
+	void updateFormantLines(){
+		FormantData data=formantList.getValue();
+		
+		if(data!=null){
+		
+			data.setF1(data.getBaseData().getF1());
+			data.setF2(data.getBaseData().getF2());
+			
+			formantControler.setF1Y(hzToIndex(data.getF1()));
+			formantControler.setF2Y(hzToIndex(data.getF2()));
+			
+			resetData(data);
+		
+		}else{
+			//reset default,maybe never called
+			formantControler.setF1Y(hzToIndex(500));
+			formantControler.setF2Y(hzToIndex(1500));
+		}
+		repaintBoth();
 	}
 	
 	protected void repaintBoth() {
@@ -947,7 +958,7 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		Buffer buffer=audioContext.createBuffer(arrayBuffer, false);
 		
 		source=audioContext.createBufferSource();
-		LogUtils.log(source);
+		
 		source.setBuffer(buffer);
 		
 		

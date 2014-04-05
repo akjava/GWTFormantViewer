@@ -664,8 +664,9 @@ protected void doClose() {
 	storeValue(KEY_SETTING_COLOR_MEMORY, memoryLineBox.getValue());
 	
 	getEntryPoint().updateFormantList();//sync formant data
-	getEntryPoint().repaintBoth();
+	
 	getEntryPoint().mainDeck.showWidget(0);
+	getEntryPoint().updateFormantLines();//TODO restore last selection
 }
 
 private void createTopBar() {
