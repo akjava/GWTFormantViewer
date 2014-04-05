@@ -328,7 +328,7 @@ public class GWTFormant implements EntryPoint {
 		
 		HorizontalPanel footer=new HorizontalPanel();
 		
-		String html="Record audio with <a href='https://github.com/mattdiamond/Recorderjs'>recorder.js</a> ,Formant value is based  on <a href='http://home.cc.umanitoba.ca/~krussll/phonetics/acoustic/formants.html'>Acoustic Phonetics</a>";
+		String html="Record audio with <a href='https://github.com/mattdiamond/Recorderjs'>recorder.js</a> ,Formant value is based  on <a href='http://home.cc.umanitoba.ca/~krussll/phonetics/acoustic/formants.html'>Acoustic Phonetics</a>,<a href='http://en.wikipedia.org/wiki/Formant#cite_note-7'>Average vowel formants</a>";
 		footer.add(new HTML(html));
 		
 		root.add(footer);
@@ -369,6 +369,8 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 		top.add(links);
 		Anchor simpleRecognize=new Anchor(textConstants.simplerecognize(),"simplerecognize.html");
 		links.add(simpleRecognize);
+		
+		links.add(new Label("|"));
 		
 		Anchor wordlesson=new Anchor(textConstants.wordlesson(),"wordlesson.html");
 		links.add(wordlesson);

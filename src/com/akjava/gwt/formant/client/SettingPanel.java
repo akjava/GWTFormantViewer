@@ -234,7 +234,7 @@ private Panel createImageFormant(){
 		}
 	});
 	
-	valueFontBox=createTextBox(panel, GWTFormant.textConstants.font(), getEntryPoint().storageControler.getValue(KEY_SETTING_FONT_VALUE, "16px Courier"));
+	valueFontBox=makeTextBox(panel, GWTFormant.textConstants.font(), getEntryPoint().storageControler.getValue(KEY_SETTING_FONT_VALUE, "16px Courier"));
 	valueFontBox.addValueChangeHandler(new StringStoreHandler(KEY_SETTING_FONT_VALUE));
 			
 			
@@ -249,15 +249,15 @@ private Panel createImageFormant(){
 	panel.add(reset0);
 	
 	
-	panel.add(new Label("Color"));
-	textColorBox=createColorBox(panel, GWTFormant.textConstants.text(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_TEXT, "#000000"));
-	insideColorBox=createColorBox(panel, GWTFormant.textConstants.inside(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_INSIDE, "#CCFFFF"));
+	panel.add(new Label(GWTFormant.textConstants.color()));
+	textColorBox=makeColorBox(panel, GWTFormant.textConstants.text(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_TEXT, "#000000"));
+	insideColorBox=makeColorBox(panel, GWTFormant.textConstants.inside(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_INSIDE, "#CCFFFF"));
 
-	bgColorBox=createColorBox(panel, GWTFormant.textConstants.background(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BG, "#FFFFFF"));
+	bgColorBox=makeColorBox(panel, GWTFormant.textConstants.background(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BG, "#FFFFFF"));
 
-	baseRectBox=createColorBox(panel, GWTFormant.textConstants.baseRect(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BASE, "#0000FF"));
-	valueRectBox=createColorBox(panel, GWTFormant.textConstants.valueRect(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_VALUE, "#FF0000"));
-	memoryLineBox=createColorBox(panel, GWTFormant.textConstants.memoryLine(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_MEMORY, "#FFFFFF"));
+	baseRectBox=makeColorBox(panel, GWTFormant.textConstants.baseRect(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_BASE, "#0000FF"));
+	valueRectBox=makeColorBox(panel, GWTFormant.textConstants.valueRect(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_VALUE, "#FF0000"));
+	memoryLineBox=makeColorBox(panel, GWTFormant.textConstants.memoryLine(), getEntryPoint().storageControler.getValue(KEY_SETTING_COLOR_MEMORY, "#FFFFFF"));
 	
 	Button reset=new Button(GWTFormant.textConstants.reset(),new ClickHandler() {
 		@Override
@@ -281,12 +281,12 @@ private Panel createImageFormant(){
 	
 	
 	//TODO store when closed
-	panel.add(new Label("Grid"));
+	panel.add(new Label(GWTFormant.textConstants.grid()));
 	
-	f1minBox=createIntegerBox(panel,GWTFormant.textConstants.min()+" F1", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MIN, 100));
-	f1maxBox=createIntegerBox(panel,GWTFormant.textConstants.max()+"F1", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MAX, 1300));
-	f2minBox=createIntegerBox(panel,GWTFormant.textConstants.min()+"F2", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MIN, 400));
-	f2maxBox=createIntegerBox(panel,GWTFormant.textConstants.max()+"F2", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MAX, 3200));
+	f1minBox=makeIntegerBox(panel,GWTFormant.textConstants.min()+"　F1", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MIN, 100));
+	f1maxBox=makeIntegerBox(panel,GWTFormant.textConstants.max()+"　F1", getEntryPoint().storageControler.getValue(KEY_SETTING_F1_GRID_MAX, 1300));
+	f2minBox=makeIntegerBox(panel,GWTFormant.textConstants.min()+"　F2", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MIN, 400));
+	f2maxBox=makeIntegerBox(panel,GWTFormant.textConstants.max()+"　F2", getEntryPoint().storageControler.getValue(KEY_SETTING_F2_GRID_MAX, 3200));
 	
 	f1minBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F1_GRID_MIN));
 	f1maxBox.addValueChangeHandler(new StoreHandler(KEY_SETTING_F1_GRID_MAX));
@@ -378,7 +378,7 @@ public String getMemoryLineColor(){
 }
 
 //TODO uibinder
-public ColorBox createColorBox(Panel parent,String name,String value){
+private ColorBox makeColorBox(Panel parent,String name,String value){
 	HorizontalPanel h=new HorizontalPanel();
 	parent.add(h);
 	
@@ -392,7 +392,7 @@ public ColorBox createColorBox(Panel parent,String name,String value){
 	return box;
 }
 
-public TextBox createTextBox(Panel parent,String name,String value){
+private TextBox makeTextBox(Panel parent,String name,String value){
 	HorizontalPanel h=new HorizontalPanel();
 	parent.add(h);
 	
@@ -406,7 +406,7 @@ public TextBox createTextBox(Panel parent,String name,String value){
 	return box;
 }
 
-public IntegerBox createIntegerBox(Panel parent,String name,int value){
+private IntegerBox makeIntegerBox(Panel parent,String name,int value){
 	HorizontalPanel h=new HorizontalPanel();
 	parent.add(h);
 	
@@ -525,7 +525,7 @@ private Panel createBaseFormant(){
 	HorizontalPanel buttons=new HorizontalPanel();
 	panel.add(buttons);
 	
-	newButton = new Button("New",new ClickHandler() {
+	newButton = new Button(GWTFormant.textConstants.newItem(),new ClickHandler() {
 		@Override
 		public void onClick(ClickEvent event) {
 			easyCells.unselect();
@@ -578,6 +578,7 @@ private Panel createBaseFormant(){
 	//reset & import
 	
 	HorizontalPanel bottomPanel=new HorizontalPanel();
+	bottomPanel.setVerticalAlignment(HorizontalPanel.ALIGN_MIDDLE);
 	panel.add(bottomPanel);
 	final ListBox presetBox=new ListBox();
 	presetBox.addItem(GWTFormant.textConstants.canadian_vowel());

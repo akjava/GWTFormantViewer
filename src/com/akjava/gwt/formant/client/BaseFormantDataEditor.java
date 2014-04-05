@@ -18,7 +18,7 @@ IntegerBox f2Editor;
 		super();
 		HorizontalPanel names=new HorizontalPanel();
 		this.add(names);
-		Label nameLabel=new Label("name");
+		Label nameLabel=new Label(GWTFormant.textConstants.name());
 		nameLabel.setWidth("100px");
 		names.add(nameLabel);
 		
@@ -28,7 +28,7 @@ IntegerBox f2Editor;
 		
 		HorizontalPanel f1s=new HorizontalPanel();
 		this.add(f1s);
-		Label f1Label=new Label("f1");
+		Label f1Label=new Label("F1");
 		f1Label.setWidth("100px");
 		f1s.add(f1Label);
 		
@@ -38,7 +38,7 @@ IntegerBox f2Editor;
 		
 		HorizontalPanel f2s=new HorizontalPanel();
 		this.add(f2s);
-		Label f2Label=new Label("f2");
+		Label f2Label=new Label("F2");
 		f2Label.setWidth("100px");
 		f2s.add(f2Label);
 		
