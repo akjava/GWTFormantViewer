@@ -997,13 +997,13 @@ Scheduler.get().scheduleDeferred(new ScheduledCommand() {
 	}
 
 	private int[] toColor(int v){
-		int[] rgb=new int[3];
+		int[] bgr=new int[3];
 		double phase = (double)v/255;
 		double shift =Math.PI+Math.PI/4;
-		 rgb[0]=(int) (255*(Math.sin(1.5*Math.PI*phase + shift + Math.PI ) + 1)/2.0) ;
-		 rgb[1]=(int) (255*(Math.sin(1.5*Math.PI*phase + shift + Math.PI/2 ) + 1)/2.0) ;
-		 rgb[2]=(int) (255*(Math.sin(1.5*Math.PI*phase + shift  ) + 1)/2.0) ;
-		return rgb;
+		 bgr[0]=(int) (255*(Math.sin(1.5*Math.PI*phase + shift + Math.PI ) + 1)/2.0) ;
+		 bgr[1]=(int) (255*(Math.sin(1.5*Math.PI*phase + shift + Math.PI/2 ) + 1)/2.0) ;
+		 bgr[2]=(int) (255*(Math.sin(1.5*Math.PI*phase + shift  ) + 1)/2.0) ;
+		return bgr;
 	}
 	
 	protected void drawCanvas() {
